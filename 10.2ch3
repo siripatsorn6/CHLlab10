@@ -1,0 +1,67 @@
+#include "DHT.h"
+#include <LiquidCrystal_I2C.h>
+
+#define DHTPIN 2
+#define DHTTYPE DHT11
+#define TempHighTH 27
+#define tempPin 13
+#define buz 8
+#define TempLowTH 20
+#define HumHighTH 70
+#define HumLowTH 30
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+DHT dht(DHTPIN, DHTTYPE);
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+  pinMode(tempPin, 1);
+  pinMode(buz, OUTPUT);
+  lcd.begin();
+
+}
+void loop() {
+  delay(2000);
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  Serial.print("\nHumidity: ");
+  Serial.print(h);
+  Serial.print(" %\t");
+  Serial.print("Temperature: ");
+  Serial.print(t);
+  Serial.print(" *C");
+  lcd.begin();
+  lcd.backlight();       // เปิด backlight 
+  lcd.print("Tem: "+String(t));
+  lcd.setCursor(0, 1);
+  lcd.print("Hum: "+String(h));
+  lcd.setCursor(1, 1);
+
+  if(t>=TempHighTH) {
+    digitalWrite(tempPin, HIGH);
+    digitalWrite(buz,HIGH);
+    Serial.print("\tAlarm!!! High Temperature!! : ");
+    Serial.print(t);
+  }
+   else if(t<=TempLowTH) {
+    digitalWrite(tempPin, HIGH);
+    digitalWrite(buz,HIGH);
+    Serial.print("\tAlarm!!! Low Temperature!! : ");
+    Serial.print(t);
+   }
+   else  if(h>= HumHighTH) {
+    digitalWrite(tempPin, HIGH);
+    digitalWrite(buz,HIGH);
+    Serial.print("\tAlarm!!! High Humidity!! : ");
+    Serial.print(h);
+  }
+     else  if(h<= HumLowTH) {
+    digitalWrite(tempPin, HIGH);
+    digitalWrite(buz,HIGH);
+    Serial.print("\tAlarm!!! Low Humidity!! : ");
+    Serial.print(h);
+  }
+  else
+    digitalWrite(tempPin, LOW);
+}
