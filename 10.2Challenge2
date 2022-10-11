@@ -1,0 +1,48 @@
+#include "DHT.h"
+#include <LiquidCrystal_I2C.h>
+
+#define DHTPIN 2
+#define DHTTYPE DHT11
+#define TempHighTH 27
+#define tempPin 13
+//#define buzzer 9
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+//const int buzzer = 9;
+DHT dht(DHTPIN, DHTTYPE);
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+  pinMode(tempPin, 1);
+  //pinMode(buzzer, OUTPUT);
+  lcd.begin();
+}
+void loop() {
+  delay(2000);
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  Serial.print("\nHumidity: ");
+  Serial.print(h);
+  Serial.print(" %\t");
+  Serial.print("Temperature: ");
+  Serial.print(t);
+  Serial.print(" *C");
+  lcd.begin();
+  lcd.backlight();       // เปิด backlight 
+  lcd.print("Tem: "+String(t));
+  lcd.setCursor(0, 1);
+  lcd.print("Hum: "+String(h));
+  lcd.setCursor(1, 1);
+
+//  tone(buzzer, 1000); // Send 1KHz sound signal...
+//  delay(1000);        // ...for 1 sec
+//  noTone(buzzer);     // Stop sound...
+//  delay(1000);        // ...for 1sec
+  if(t>=TempHighTH) {
+    digitalWrite(tempPin, HIGH);
+    Serial.print("\tAlarm!!! High Temperature!! : ");
+    Serial.print(t);
+  }
+  else
+    digitalWrite(tempPin, LOW);
+}
