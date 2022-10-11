@@ -1,1 +1,70 @@
-33.
+#include "DHT.h"
+#include <LiquidCrystal_I2C.h>
+#define redpin 13
+#define yellowpin 12
+#define greenpin 11
+DHT dht(2, DHT11);
+String inString;
+int TempHighTH=28;
+int TempLowTH=20;
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+void setup() {
+  Serial.begin(9600);
+  lcd.begin();
+  dht.begin();
+  pinMode(redpin, 1);
+  pinMode(yellowpin, 1);
+  pinMode(greenpin, 1);
+}
+void loop() {
+  while (Serial.available() > 0) {
+    int inChar= Serial.read();
+    if(isDigit(inChar)) {
+    inString+= (char)inChar;
+   }
+  if(inChar=='\n') {
+    TempHighTH=inString.toInt();
+    inString = "";
+  }
+  }
+  delay(2000);
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  Serial.print("\nHumidity: ");
+  Serial.print(h);
+  Serial.print(" %\t");
+  Serial.print("Temperature: ");
+  Serial.print(t);
+  Serial.print(" *C\t");
+  Serial.print("High Tempearature Threshold : ");
+  Serial.print(TempHighTH);
+  if(t>TempHighTH) {
+    digitalWrite(redpin, HIGH);
+    digitalWrite(yellowpin, LOW);
+    digitalWrite(greenpin, LOW);
+    Serial.print("\t\tAlarm!!! High Temperature!! : ");
+    Serial.print(t);
+    lcd.setCursor(0, 0);
+    lcd.print("High Tem: "+String(t));
+}
+  else if(t<TempLowTH) {
+    digitalWrite(redpin, HIGH);
+    digitalWrite(yellowpin, LOW);
+    digitalWrite(greenpin, LOW);
+    Serial.print("\t\tAlarm!!! Low Temperature!! : ");
+    Serial.print(t);
+    lcd.setCursor(0, 0);
+    lcd.print("Low Tem: "+String(t));
+}
+  else if(t==TempLowTH||t==TempHighTH) {
+    digitalWrite(yellowpin, HIGH);
+    digitalWrite(redpin, LOW);
+    digitalWrite(greenpin, LOW);
+    Serial.print("\t\tWarning!!! High Temperature!! : ");
+    Serial.print(t);
+    lcd.setCursor(0, 0);
+    lcd.print("Warning! Tem: "+String(t));
+}
+  else 
+  digitalWrite(greenpin, HIGH);
+}
